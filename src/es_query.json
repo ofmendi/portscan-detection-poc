@@ -1,0 +1,45 @@
+{
+  "size": 0,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "tags": "tcp_connection_started"
+          }
+        },
+        {
+          "range": {
+            "@timestamp": {
+              "gte": "now-30s"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "by_src_ip": {
+      "terms": {
+        "field": "src_ip.keyword"
+      },
+      "aggs": {
+        "by_target_ip": {
+          "terms": {
+            "field": "dst_ip.keyword",
+            "order": {
+              "unique_port_count": "desc"
+            }
+          },
+          "aggs": {
+            "unique_port_count": {
+              "cardinality": {
+                "field": "dst_port.keyword"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
